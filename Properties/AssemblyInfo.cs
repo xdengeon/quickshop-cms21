@@ -8,7 +8,7 @@ using System.Security.Permissions;
 using MelonLoader;
 using QuickShop;
 
-[assembly: MelonInfo(typeof(QuickShopMod), "QuickShop", "1.04", "RIDI", null)]
+[assembly: MelonInfo(typeof(QuickShopMod), "QuickShop", "1.04", "Dengeon", null)]
 [assembly: MelonGame("Red Dot Games", "Car Mechanic Simulator 2021")]
 [assembly: AssemblyTitle("QuickShop")]
 [assembly: AssemblyDescription("")]

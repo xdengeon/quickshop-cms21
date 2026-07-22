@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"d:/quickshop decompiled\" && DOTNET_CLI_UI_LANGUAGE=en dotnet build QuickShop.csproj -c Debug -v minimal --nologo 2>&1 | grep -iE \"error|deployed|build succeeded|-> D:\" | head -20",
+            "shell": "bash",
+            "timeout": 180,
+            "statusMessage": "Building & deploying QuickShop…"
+          }
+        ]
+      }
+    ]
+  }
+}
