@@ -28,5 +28,7 @@ public class JsonConfig
 
 	public bool EnabledAutoBuyRequiredParts { get; set; }
 
+	public bool EnabledAutoBuyTuned { get; set; }
+
 	public double ConfigVersion { get; set; }
 }

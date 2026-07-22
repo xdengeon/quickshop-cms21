@@ -70,6 +70,7 @@ public class QuickShopComponent : MonoBehaviour
 		bool enabledTuning = config.GetConfigFile().EnabledTuning;
 		double num = config.GetConfigFile().PricePercentage;
 		bool enabledAutoBuyRequiredParts = config.GetConfigFile().EnabledAutoBuyRequiredParts;
+		bool enabledAutoBuyTuned = config.GetConfigFile().EnabledAutoBuyTuned;
 		string cheatModeChangeKeybind = config.GetConfigFile().CheatModeChangeKeybind;
 		string cheatModeKeybind = config.GetConfigFile().CheatModeKeybind;
 		bool enabledCheatMode = config.GetConfigFile().EnabledCheatMode;
@@ -122,7 +123,7 @@ public class QuickShopComponent : MonoBehaviour
 			}
 			if (FunctionMode == 1)
 			{
-				new FunctionModes().GetMissingItems(GameScript.Get().GetIOMouseOverCarLoader2(), PartAutoUpgrade, num, partFixedScrap);
+				new FunctionModes().GetMissingItems(GameScript.Get().GetIOMouseOverCarLoader2(), PartAutoUpgrade, num, partFixedScrap, enabledAutoBuyTuned);
 			}
 		}
 		if (enabledCheatMode)

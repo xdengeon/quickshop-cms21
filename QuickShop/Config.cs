@@ -25,7 +25,8 @@ public class Config
 			PricePercentage = 100,
 			KeybindPartFixedScrap = 60,
 			EnabledAutoBuyRequiredParts = true,
-			ConfigVersion = 1.05
+			EnabledAutoBuyTuned = true,
+			ConfigVersion = 1.06
 		};
 		using StreamWriter streamWriter = File.CreateText("Mods/config.json");
 		new JsonSerializer
@@ -135,7 +136,7 @@ public class Config
 	{
 		string path = "Mods/config.json";
 		JsonConfig jsonConfig = JsonConvert.DeserializeObject<JsonConfig>(File.ReadAllText(path));
-		if (jsonConfig.ConfigVersion != 1.05)
+		if (jsonConfig.ConfigVersion != 1.06)
 		{
 			CreateConfigFile();
 			jsonConfig = JsonConvert.DeserializeObject<JsonConfig>(File.ReadAllText(path));
