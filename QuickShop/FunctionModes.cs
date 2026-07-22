@@ -21,6 +21,33 @@ internal class FunctionModes
 		return true;
 	}
 
+	public bool UnmountAllCarParts(CarLoader carloader)
+	{
+		// Peel the whole car apart, inner parts included: keep instantly unmounting every part
+		// that still can be, until a full pass removes nothing new (parts blocked by outer ones
+		// become removable once those come off). The pass cap guarantees the loop always ends.
+		bool removedAny = true;
+		int safety = 0;
+		while (removedAny && safety++ < 25)
+		{
+			removedAny = false;
+			PartScript[] parts = carloader.root.GetComponentsInChildren<PartScript>();
+			for (int i = 0; i < parts.Length; i++)
+			{
+				PartScript part = parts[i];
+				if (!part.IsUnmounted && part.canBeUnmount)
+				{
+					part.FastUnmount();
+					if (part.IsUnmounted)
+					{
+						removedAny = true;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
 	public bool GetMissingItems(CarLoader carloader, int PartAutoUpgrade, double pricepercentage, double PartFixedScrap, bool autoBuyTuned)
 	{
 		PartScript[] array = carloader.root.GetComponentsInChildren<PartScript>();
