@@ -11,11 +11,6 @@ public class QuickShopMod : MelonMod
 {
 	public override void OnApplicationStart()
 	{
-		//IL_0014: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0019: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0025: Expected O, but got Unknown
-		//IL_00b6: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00c3: Expected O, but got Unknown
 		MelonLogger.Log("[QuickShop] Registering QuickShopComponent in Il2Cpp");
 		try
 		{

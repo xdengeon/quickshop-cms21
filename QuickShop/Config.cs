@@ -8,8 +8,6 @@ public class Config
 {
 	public void CreateConfigFile()
 	{
-		//IL_0099: Unknown result type (might be due to invalid IL or missing references)
-		//IL_009e: Unknown result type (might be due to invalid IL or missing references)
 		JsonConfig jsonConfig = new JsonConfig
 		{
 			NormalKeybind = "B",
@@ -37,8 +35,6 @@ public class Config
 
 	public void CreatePartsFile()
 	{
-		//IL_0198: Unknown result type (might be due to invalid IL or missing references)
-		//IL_019d: Unknown result type (might be due to invalid IL or missing references)
 		List<JsonReqParts> list = new List<JsonReqParts>();
 		JsonReqParts item = new JsonReqParts
 		{

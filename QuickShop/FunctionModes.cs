@@ -21,75 +21,65 @@ internal class FunctionModes
 		return true;
 	}
 
-	public bool UnmountAllCarParts(CarLoader carloader)
+	public bool UnmountAllPass(CarLoader carloader)
 	{
-		// Peel the whole car apart, inner parts included: keep instantly unmounting every part
-		// that still can be, until a full pass removes nothing new (parts blocked by outer ones
-		// become removable once those come off). The pass cap guarantees the loop always ends.
-		bool removedAny = true;
-		int safety = 0;
-		while (removedAny && safety++ < 25)
+		// One disassembly pass: instantly unmount every part that is currently unblocked - bolts
+		// come off before the panel they hold, so nothing is left floating. Parts still blocked by
+		// outer ones stay put this frame; the game clears their blocked state a frame later, so the
+		// caller runs this once per frame until a pass removes nothing. Returns whether it removed
+		// anything this pass.
+		bool progressed = false;
+		PartScript[] parts = carloader.root.GetComponentsInChildren<PartScript>();
+		for (int i = 0; i < parts.Length; i++)
 		{
-			removedAny = false;
-			PartScript[] parts = carloader.root.GetComponentsInChildren<PartScript>();
-			for (int i = 0; i < parts.Length; i++)
+			PartScript part = parts[i];
+			if (!part.IsUnmounted && part.canBeUnmount && !part.IsBlocked())
 			{
-				PartScript part = parts[i];
-				if (!part.IsUnmounted && part.canBeUnmount)
+				part.FastUnmount();
+				if (part.IsUnmounted)
 				{
-					part.FastUnmount();
-					if (part.IsUnmounted)
-					{
-						removedAny = true;
-					}
+					progressed = true;
 				}
 			}
 		}
-		return true;
+		return progressed;
 	}
 
-	public bool MountAllCarParts(CarLoader carloader)
+	public bool MountAllPass(CarLoader carloader)
 	{
-		// Install parts we own onto the car's empty slots. Like unmounting, we go in passes -
-		// mounting an outer part can expose an inner slot - until a full pass mounts nothing new.
-		// For each slot we pick the best item we own (tuned 3-star, then tuned, then regular;
-		// higher quality first) so the good parts are the ones that go on.
-		//
-		// NOTE: the game's mount path (ActionMount/SelectedToMount) is UI-driven and could not be
-		// fully verified offline; this drives the most plausible entry points and may need tweaks.
+		// One assembly pass: for each empty slot we own a part for, instantly mount the best one
+		// (tuned 3-star, then tuned, then regular; higher quality first) and consume it from the
+		// inventory. Parts that cannot go on yet just do not take this frame; the caller runs this
+		// once per frame until a pass mounts nothing. Returns whether it mounted anything.
 		if (Singleton<Inventory>.Instance == null)
 		{
-			return true;
+			return false;
 		}
 		Inventory inventory = Singleton<Inventory>.Instance;
 		GameScript gameScript = GameScript.Get();
-		bool mountedAny = true;
-		int safety = 0;
-		while (mountedAny && safety++ < 25)
+		bool progressed = false;
+		PartScript[] parts = carloader.root.GetComponentsInChildren<PartScript>();
+		for (int i = 0; i < parts.Length; i++)
 		{
-			mountedAny = false;
-			PartScript[] parts = carloader.root.GetComponentsInChildren<PartScript>();
-			for (int i = 0; i < parts.Length; i++)
+			PartScript part = parts[i];
+			if (!part.IsUnmounted)
 			{
-				PartScript part = parts[i];
-				if (!part.IsUnmounted)
-				{
-					continue;
-				}
-				Item best = FindBestOwnedPart(inventory, part.GetID());
-				if (best == null)
-				{
-					continue;
-				}
-				gameScript.SelectedToMount = best;
-				part.ActionMount(false);
-				if (!part.IsUnmounted)
-				{
-					mountedAny = true;
-				}
+				continue;
+			}
+			Item best = FindBestOwnedPart(inventory, part.GetID());
+			if (best == null)
+			{
+				continue;
+			}
+			gameScript.SelectedToMount = best;
+			part.MountByGroup(true);
+			if (!part.IsUnmounted)
+			{
+				inventory.Delete(best);
+				progressed = true;
 			}
 		}
-		return true;
+		return progressed;
 	}
 
 	// Best inventory item that fits the given slot id, ranked tuned-3-star > tuned > regular

@@ -13,6 +13,8 @@ public class QuickShopComponent : MonoBehaviour
 
 	public static int PartAutoUpgrade;
 
+	private static bool autoTaskRunning;
+
 	public QuickShopComponent(IntPtr ptr)
 		: base(ptr)
 	{
@@ -34,27 +36,6 @@ public class QuickShopComponent : MonoBehaviour
 	[HarmonyPostfix]
 	public static void Update()
 	{
-		//IL_00f7: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0160: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0108: Unknown result type (might be due to invalid IL or missing references)
-		//IL_010e: Invalid comparison between Unknown and I4
-		//IL_01e0: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0171: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0177: Invalid comparison between Unknown and I4
-		//IL_01f1: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01f7: Invalid comparison between Unknown and I4
-		//IL_0251: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0412: Unknown result type (might be due to invalid IL or missing references)
-		//IL_02ec: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0262: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0268: Invalid comparison between Unknown and I4
-		//IL_0464: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0423: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0429: Invalid comparison between Unknown and I4
-		//IL_0300: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0306: Invalid comparison between Unknown and I4
-		//IL_0475: Unknown result type (might be due to invalid IL or missing references)
-		//IL_047b: Invalid comparison between Unknown and I4
 		Config config = new Config();
 		if (!config.CheckConfigFile())
 		{
@@ -143,11 +124,11 @@ public class QuickShopComponent : MonoBehaviour
 			}
 			if (FunctionMode == 2)
 			{
-				new FunctionModes().UnmountAllCarParts(GameScript.Get().GetIOMouseOverCarLoader2());
+				StartAutoTask(true, GameScript.Get().GetIOMouseOverCarLoader2());
 			}
 			if (FunctionMode == 3)
 			{
-				new FunctionModes().MountAllCarParts(GameScript.Get().GetIOMouseOverCarLoader2());
+				StartAutoTask(false, GameScript.Get().GetIOMouseOverCarLoader2());
 			}
 		}
 		if (enabledCheatMode)
@@ -235,14 +216,6 @@ public class QuickShopComponent : MonoBehaviour
 
 	public static void NormalPartBuy(string ItemId, double pricepercentage, bool autobuyreqparts, ListJsonReqParts ReqParts, double PartFixedScrap)
 	{
-		//IL_0188: Unknown result type (might be due to invalid IL or missing references)
-		//IL_019f: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0152: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0169: Unknown result type (might be due to invalid IL or missing references)
-		//IL_02ae: Unknown result type (might be due to invalid IL or missing references)
-		//IL_030f: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0204: Unknown result type (might be due to invalid IL or missing references)
-		//IL_028f: Unknown result type (might be due to invalid IL or missing references)
 		int num = 0;
 		num += PriceCalculation(ItemId, pricepercentage);
 		if (ItemId == null)
@@ -385,12 +358,35 @@ public class QuickShopComponent : MonoBehaviour
 		return Convert.ToInt32(Math.Ceiling(pricepercentage / 100.0 * (double)Singleton<GameInventory>.Instance.GetItemProperty(ItemId).Price));
 	}
 
+	// Runs a whole disassembly or assembly spread over REAL frames: each pass does what is
+	// possible right now, then yields a frame so the game can recompute which parts are blocked,
+	// and the next pass continues from there. That makes one key press finish the entire job
+	// (the block/unblock cascade only advances between frames, not within a single Update).
+	public static void StartAutoTask(bool unmount, CarLoader carloader)
+	{
+		if (autoTaskRunning || carloader == null)
+		{
+			return;
+		}
+		MelonCoroutines.Start(AutoTaskRoutine(unmount, carloader));
+	}
+
+	private static System.Collections.IEnumerator AutoTaskRoutine(bool unmount, CarLoader carloader)
+	{
+		autoTaskRunning = true;
+		FunctionModes functionModes = new FunctionModes();
+		int idleFrames = 0;
+		while (idleFrames < 8 && carloader != null)
+		{
+			bool progressed = (unmount ? functionModes.UnmountAllPass(carloader) : functionModes.MountAllPass(carloader));
+			idleFrames = (progressed ? 0 : idleFrames + 1);
+			yield return null;
+		}
+		autoTaskRunning = false;
+	}
+
 	public static Item CreateItem(string ItemId)
 	{
-		//IL_0000: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0005: Unknown result type (might be due to invalid IL or missing references)
-		//IL_000c: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0013: Expected O, but got Unknown
 		Item val = new Item
 		{
 			ID = ItemId
