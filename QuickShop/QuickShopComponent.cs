@@ -18,19 +18,19 @@ public class QuickShopComponent : MonoBehaviour
 	public QuickShopComponent(IntPtr ptr)
 		: base(ptr)
 	{
-		MelonLogger.Log("[QuickShop] Entered Constructor");
+		MelonLogger.Msg("[QuickShop] Entered Constructor");
 	}
 
 	[HarmonyPostfix]
 	public static void Awake()
 	{
-		MelonLogger.Log("[QuickShop] I'm Awake!");
+		MelonLogger.Msg("[QuickShop] I'm Awake!");
 	}
 
 	[HarmonyPostfix]
 	public static void Start()
 	{
-		MelonLogger.Log("[QuickShop] I'm Starting Up...");
+		MelonLogger.Msg("[QuickShop] I'm Starting Up...");
 	}
 
 	[HarmonyPostfix]

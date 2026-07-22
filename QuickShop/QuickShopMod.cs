@@ -11,7 +11,7 @@ public class QuickShopMod : MelonMod
 {
 	public override void OnApplicationStart()
 	{
-		MelonLogger.Log("[QuickShop] Registering QuickShopComponent in Il2Cpp");
+		MelonLogger.Msg("[QuickShop] Registering QuickShopComponent in Il2Cpp");
 		try
 		{
 			ClassInjector.RegisterTypeInIl2Cpp<QuickShopComponent>();
@@ -21,21 +21,21 @@ public class QuickShopMod : MelonMod
 		}
 		catch
 		{
-			MelonLogger.Log("[QuickShop] FAILED to Register Il2Cpp Type: QuickShopComponent!");
+			MelonLogger.Msg("[QuickShop] FAILED to Register Il2Cpp Type: QuickShopComponent!");
 		}
 		try
 		{
 			HarmonyLib.Harmony harmony = this.HarmonyInstance;
 			MethodInfo methodInfo = AccessTools.Method(typeof(GameScript), "Update", (Type[])null, (Type[])null);
-			MelonLogger.Log("[QuickShop] Harmony - Original Method: " + methodInfo.DeclaringType.Name + "." + methodInfo.Name);
+			MelonLogger.Msg("[QuickShop] Harmony - Original Method: " + methodInfo.DeclaringType.Name + "." + methodInfo.Name);
 			MethodInfo methodInfo2 = AccessTools.Method(typeof(QuickShopComponent), "Update", (Type[])null, (Type[])null);
-			MelonLogger.Log("[QuickShop] Harmony - Postfix Method: " + methodInfo2.DeclaringType.Name + "." + methodInfo2.Name);
+			MelonLogger.Msg("[QuickShop] Harmony - Postfix Method: " + methodInfo2.DeclaringType.Name + "." + methodInfo2.Name);
 			harmony.Patch((MethodBase)methodInfo, (HarmonyMethod)null, new HarmonyMethod(methodInfo2), (HarmonyMethod)null, (HarmonyMethod)null, (HarmonyMethod)null);
-			MelonLogger.Log("[QuickShop] Harmony - Runtime Patch's Applied");
+			MelonLogger.Msg("[QuickShop] Harmony - Runtime Patch's Applied");
 		}
 		catch
 		{
-			MelonLogger.Log("[QuickShop] Harmony - FAILED to Apply Patch's!");
+			MelonLogger.Msg("[QuickShop] Harmony - FAILED to Apply Patch's!");
 		}
 	}
 }
