@@ -56,7 +56,7 @@ internal class FunctionModes
 			string buyId = GetBuyId(gameInventory, array[j].GetIDWithTuned(), autoBuyTuned);
 			Item val = new Item();
 			((BaseItem)val).ID = buyId;
-			QuickShopComponent.ApplyWheelData(val, buyId, carloader);
+			QuickShopComponent.ApplyWheelData(val, buyId, carloader, array[j]);
 			// The quality upgrade (and its scrap cost) stays tied to the auto-upgrade toggle,
 			// independent of whether we bought the tuned or the plain version of the part.
 			if (PartAutoUpgrade == 1 && num3 <= (double)GlobalData.PlayerScraps)

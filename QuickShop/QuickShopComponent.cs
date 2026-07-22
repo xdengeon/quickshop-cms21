@@ -377,12 +377,29 @@ public class QuickShopComponent : MonoBehaviour
 
 	// Rims and tires must inherit the wheel dimensions the car actually uses, otherwise a
 	// freshly created part spawns with a default size/profile that no longer fits the car.
-	// The car reports its front spec as "Width/ProfileRSize" (e.g. "205/55R16"), optionally
-	// as "front|rear" - we always use the front spec, matching the single-part buy path.
-	public static void ApplyWheelData(Item item, string itemId, CarLoader carloader)
+	// When the part is still mounted on the car (GetMissingItems passes its PartScript) we read
+	// the exact size of the corner it sits on, so staggered front/rear setups get matching
+	// wheels. Otherwise (e.g. a loose part bought from the shop) we fall back to the car's front
+	// spec string "Width/ProfileRSize" (e.g. "205/55R16", optionally "front|rear").
+	public static void ApplyWheelData(Item item, string itemId, CarLoader carloader, PartScript part = null)
 	{
 		if (itemId == null || (!itemId.Contains("rim_") && !itemId.Contains("tire_")))
 		{
+			return;
+		}
+		Wheel wheel = ((part != null) ? GetNearestWheel(carloader, part) : null);
+		if (wheel != null && wheel.Size > 0f)
+		{
+			WheelData wheelData2 = new WheelData
+			{
+				Size = (int)Math.Round(wheel.Size)
+			};
+			if (itemId.Contains("tire_"))
+			{
+				wheelData2.Width = (int)Math.Round(wheel.Width);
+				wheelData2.Profile = (int)Math.Round(wheel.Profile);
+			}
+			item.WheelData = wheelData2;
 			return;
 		}
 		string tireSize = carloader.GetFrontTireSize();
@@ -411,5 +428,40 @@ public class QuickShopComponent : MonoBehaviour
 			wheelData.Profile = int.Parse(byProfile[1]);
 		}
 		item.WheelData = wheelData;
+	}
+
+	// Finds which corner a mounted wheel part sits on - the nearest of the four wheel handles -
+	// and returns that corner's wheel, whose Width/Size/Profile are the exact dimensions to use.
+	private static Wheel GetNearestWheel(CarLoader carloader, PartScript part)
+	{
+		GameObject fl = carloader.GetWheelFLHandle();
+		GameObject fr = carloader.GetWheelFRHandle();
+		GameObject rl = carloader.GetWheelRLHandle();
+		GameObject rr = carloader.GetWheelRRHandle();
+		if (fl == null || fr == null || rl == null || rr == null)
+		{
+			return null;
+		}
+		Vector3 pos = part.transform.position;
+		WheelType nearest = WheelType.FrontLeft;
+		float bestDist = Vector3.Distance(pos, fl.transform.position);
+		float dist = Vector3.Distance(pos, fr.transform.position);
+		if (dist < bestDist)
+		{
+			bestDist = dist;
+			nearest = WheelType.FrontRight;
+		}
+		dist = Vector3.Distance(pos, rl.transform.position);
+		if (dist < bestDist)
+		{
+			bestDist = dist;
+			nearest = WheelType.RearLeft;
+		}
+		dist = Vector3.Distance(pos, rr.transform.position);
+		if (dist < bestDist)
+		{
+			nearest = WheelType.RearRight;
+		}
+		return carloader.GetWheel(nearest);
 	}
 }

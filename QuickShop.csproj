@@ -70,4 +70,13 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+
+  <!-- Copy the built mod into the game's Mods folder after each build.
+       Skipped if that folder is missing (e.g. building on another machine). If the game is
+       running the DLL is locked, so this warns instead of failing the build - close the
+       game and rebuild to deploy. -->
+  <Target Name="DeployToMods" AfterTargets="Build" Condition="Exists('$(GameDir)\Mods')">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GameDir)\Mods" ContinueOnError="true" />
+    <Message Importance="high" Text="Deployed $(TargetFileName) -> $(GameDir)\Mods" />
+  </Target>
 </Project>
