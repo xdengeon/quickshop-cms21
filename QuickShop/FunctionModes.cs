@@ -48,6 +48,87 @@ internal class FunctionModes
 		return true;
 	}
 
+	public bool MountAllCarParts(CarLoader carloader)
+	{
+		// Install parts we own onto the car's empty slots. Like unmounting, we go in passes -
+		// mounting an outer part can expose an inner slot - until a full pass mounts nothing new.
+		// For each slot we pick the best item we own (tuned 3-star, then tuned, then regular;
+		// higher quality first) so the good parts are the ones that go on.
+		//
+		// NOTE: the game's mount path (ActionMount/SelectedToMount) is UI-driven and could not be
+		// fully verified offline; this drives the most plausible entry points and may need tweaks.
+		if (Singleton<Inventory>.Instance == null)
+		{
+			return true;
+		}
+		Inventory inventory = Singleton<Inventory>.Instance;
+		GameScript gameScript = GameScript.Get();
+		bool mountedAny = true;
+		int safety = 0;
+		while (mountedAny && safety++ < 25)
+		{
+			mountedAny = false;
+			PartScript[] parts = carloader.root.GetComponentsInChildren<PartScript>();
+			for (int i = 0; i < parts.Length; i++)
+			{
+				PartScript part = parts[i];
+				if (!part.IsUnmounted)
+				{
+					continue;
+				}
+				Item best = FindBestOwnedPart(inventory, part.GetID());
+				if (best == null)
+				{
+					continue;
+				}
+				gameScript.SelectedToMount = best;
+				part.ActionMount(false);
+				if (!part.IsUnmounted)
+				{
+					mountedAny = true;
+				}
+			}
+		}
+		return true;
+	}
+
+	// Best inventory item that fits the given slot id, ranked tuned-3-star > tuned > regular
+	// (higher quality wins within a group). Returns null when nothing we own fits the slot.
+	private static Item FindBestOwnedPart(Inventory inventory, string slotId)
+	{
+		if (string.IsNullOrEmpty(slotId))
+		{
+			return null;
+		}
+		Item best = null;
+		int bestRank = int.MinValue;
+		var enumerator = inventory.GetItems().GetEnumerator();
+		while (enumerator.MoveNext())
+		{
+			Item item = enumerator.Current;
+			if (item == null || item.GetNormalID() != slotId)
+			{
+				continue;
+			}
+			int rank = PartRank(item);
+			if (rank > bestRank)
+			{
+				bestRank = rank;
+				best = item;
+			}
+		}
+		return best;
+	}
+
+	// Priority score: tuned 3-star highest, then any tuned, then regular; ties broken by quality.
+	private static int PartRank(Item item)
+	{
+		string id = ((BaseItem)item).ID;
+		bool tuned = id != null && id.StartsWith("t_");
+		int tier = ((tuned && item.Quality >= 3) ? 3 : (tuned ? 2 : 1));
+		return tier * 100 + item.Quality;
+	}
+
 	public bool GetMissingItems(CarLoader carloader, int PartAutoUpgrade, double pricepercentage, double PartFixedScrap, bool autoBuyTuned)
 	{
 		PartScript[] array = carloader.root.GetComponentsInChildren<PartScript>();

@@ -108,6 +108,10 @@ public class QuickShopComponent : MonoBehaviour
 			}
 			else if (FunctionMode == 2)
 			{
+				FunctionMode = 3;
+			}
+			else if (FunctionMode == 3)
+			{
 				FunctionMode = 0;
 			}
 			if (FunctionMode == 0)
@@ -121,6 +125,10 @@ public class QuickShopComponent : MonoBehaviour
 			if (FunctionMode == 2)
 			{
 				UIManager.Get().ShowPopup("QiuckShop Func:", "Unmount All Car Parts Mode Activated!", (PopupType)0);
+			}
+			if (FunctionMode == 3)
+			{
+				UIManager.Get().ShowPopup("QiuckShop Func:", "Mount All Car Parts Mode Activated!", (PopupType)0);
 			}
 		}
 		if (Input.GetKeyInt((KeyCode)Enum.Parse(typeof(KeyCode), functionModeKeybind)) && (int)Event.current.type == 4)
@@ -136,6 +144,10 @@ public class QuickShopComponent : MonoBehaviour
 			if (FunctionMode == 2)
 			{
 				new FunctionModes().UnmountAllCarParts(GameScript.Get().GetIOMouseOverCarLoader2());
+			}
+			if (FunctionMode == 3)
+			{
+				new FunctionModes().MountAllCarParts(GameScript.Get().GetIOMouseOverCarLoader2());
 			}
 		}
 		if (enabledCheatMode)
